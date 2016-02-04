@@ -20,9 +20,15 @@ gulp.task('runTests', function(){
 	return gulp.src('test/pingpong-tests.js').pipe(mocha({reporter: 'nyan'}));
 });
 
-// gulp.task('watchJs', function(){
-//   gulp.watch(['js/*.js', 'test/*.js'], ['runTests', 'jsBrowserify']);
-// });
+//task to build js if any js files change and run tests on it.
+//different from the full build task because we could put css stuff in there.
+gulp.task('watchJs', function(){
+	if (utilities.env.develop) {
+	  gulp.watch(['js/*.js', 'test/*.js'], ['runTests', 'jsBrowserify']);
+	} else {
+	  gulp.watch(['js/*.js', 'test/*.js'], ['runTests', 'minifyScripts']);
+	}
+});
 
 //take all frontend js files (inside js folder ending in -interface.js)
 //concatinate them into one file: ./build/js/allConcat.js
@@ -64,16 +70,7 @@ gulp.task('browser-sync', function() {
         server: {
             baseDir: "./",
 						index: "pingpong.html"
-        }
-				
+        },
+				files: ['pingpong.html', 'build/js/app.js']
     });
-		gulp.watch(['js/*.js', 'test/*.js'], ['js-watch']);
 });
-
-//when you run this task after initializing the
-gulp.task('js-watch', ['runTests', 'build'], browserSync.reload);
-
-/*
-correct package.json and add browsersync w/ dev server.
-live reloading based on watching and replacing files that change
-*/
