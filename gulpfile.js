@@ -8,6 +8,8 @@ var buffer = require('vinyl-buffer');
 var rename = require('gulp-rename');
 var utilities = require('gulp-util');
 var del = require('del');
+var gulp        = require('gulp');
+var browserSync = require('browser-sync').create();
 
 var buildProduction = true;
 if (utilities.env.develop === true) {
@@ -18,9 +20,9 @@ gulp.task('runTests', function(){
 	return gulp.src('test/pingpong-tests.js').pipe(mocha({reporter: 'nyan'}));
 });
 
-gulp.task('watchJs', function(){
-  gulp.watch(['js/*.js', 'test/*.js'], ['runTests', 'jsBrowserify']);
-});
+// gulp.task('watchJs', function(){
+//   gulp.watch(['js/*.js', 'test/*.js'], ['runTests', 'jsBrowserify']);
+// });
 
 //take all frontend js files (inside js folder ending in -interface.js)
 //concatinate them into one file: ./build/js/allConcat.js
@@ -45,7 +47,7 @@ gulp.task("minifyScripts", ["jsBrowserify"], function(){
     .pipe(gulp.dest("./build/js"));
 });
 
-gulp.task("build", function(){
+gulp.task("build", ["clean"], function(){
 	if (utilities.env.develop) {
 		gulp.start('jsBrowserify');
 	} else {
@@ -56,6 +58,20 @@ gulp.task("build", function(){
 gulp.task("clean", function(){
 	return del(['build', 'tmp']);
 });
+
+gulp.task('browser-sync', function() {
+    browserSync.init({
+        server: {
+            baseDir: "./",
+						index: "pingpong.html"
+        }
+				
+    });
+		gulp.watch(['js/*.js', 'test/*.js'], ['js-watch']);
+});
+
+//when you run this task after initializing the
+gulp.task('js-watch', ['runTests', 'build'], browserSync.reload);
 
 /*
 correct package.json and add browsersync w/ dev server.
